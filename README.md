@@ -109,6 +109,17 @@ Remember that:
 * To have state persistence, mount `/root/.local/state/inferno_aoip` as a volume (or different user's if you application is not running as root)
 
 
+## Building on macOS (experimental)
+* Currently only `inferno2pipe` and the `inferno_aoip` library build on macOS. The ALSA plugin (`alsa_pcm_inferno`) is Linux-only and out of scope.
+* Build and test with:
+  ```
+  cargo build -p inferno2pipe
+  cargo test -p inferno_aoip -p usrvclock
+  ```
+  The `searchfire` tests (`client_and_server` and the doctests) currently fail upstream on every platform, so they are left out here.
+* A macOS version of the clock synchronization daemon is a separate effort, see [`docs/superpowers/plans/2026-11-20-m1-statime-macos-daemon.md`](docs/superpowers/plans/2026-11-20-m1-statime-macos-daemon.md). Without it, `inferno2pipe` still starts but runs with no clock (logged as `no clock available`).
+
+
 # Legal and moral stuff
 Disclaimer: Dante uses technology patented by Audinate. This source code may use these patents too. Consult a lawyer if you want to:
 * make money of it
