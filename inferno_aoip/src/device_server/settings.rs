@@ -158,6 +158,7 @@ pub struct Settings {
   pub clock_path: Option<PathBuf>,
   pub use_safe_clock: bool,
   pub tx_source_bit_depth: u8,
+  pub state_dir: Option<PathBuf>,
 }
 
 impl Settings {
@@ -202,6 +203,7 @@ impl Settings {
       clock_path: config.get("CLOCK_PATH").map(|p| p.try_into().unwrap()),
       use_safe_clock,
       tx_source_bit_depth,
+      state_dir: config.get("STATE_DIR").map(PathBuf::from),
     };
 
     // the following should be harmless, as the application still has the chance to overwrite it
@@ -229,5 +231,19 @@ impl Settings {
         friendly_name: Arc::new(RwLock::new(format!("TX {id}"))),
       })
       .collect();
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn state_dir_setting_is_parsed() {
+    let mut cfg = BTreeMap::new();
+    cfg.insert("STATE_DIR".to_string(), "/tmp/inferno-x".to_string());
+    cfg.insert("BIND_IP".to_string(), "127.0.0.1".to_string());
+    let s = Settings::new("T", "T", None, &cfg);
+    assert_eq!(s.state_dir, Some(PathBuf::from("/tmp/inferno-x")));
   }
 }

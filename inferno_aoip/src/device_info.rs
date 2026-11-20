@@ -48,14 +48,10 @@ impl DeviceInfo {
   pub fn latency_samples(&self) -> usize {
     self.latency_ns * (self.sample_rate as usize) / 1_000_000_000
   }
-}
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  fn dummy_device_info(latency_ns: usize, sample_rate: u32) -> DeviceInfo {
-    DeviceInfo {
+  #[cfg(test)]
+  pub(crate) fn dummy_device_info(latency_ns: usize, sample_rate: u32) -> Self {
+    Self {
       ip_address: Ipv4Addr::UNSPECIFIED,
       netmask: Ipv4Addr::UNSPECIFIED,
       gateway: Ipv4Addr::UNSPECIFIED,
@@ -82,40 +78,45 @@ mod tests {
       info_request_port: 0,
     }
   }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
 
   #[test]
   fn zero_latency_ns_returns_zero() {
-    let device = dummy_device_info(0, 48_000);
+    let device = DeviceInfo::dummy_device_info(0, 48_000);
     assert_eq!(device.latency_samples(), 0);
   }
 
   #[test]
   fn zero_sample_rate_returns_zero() {
-    let device = dummy_device_info(1_000_000_000, 0);
+    let device = DeviceInfo::dummy_device_info(1_000_000_000, 0);
     assert_eq!(device.latency_samples(), 0);
   }
 
   #[test]
   fn one_second_at_48000_hz() {
-    let device = dummy_device_info(1_000_000_000, 48_000);
+    let device = DeviceInfo::dummy_device_info(1_000_000_000, 48_000);
     assert_eq!(device.latency_samples(), 48_000);
   }
 
   #[test]
   fn one_second_at_44100_hz() {
-    let device = dummy_device_info(1_000_000_000, 44_100);
+    let device = DeviceInfo::dummy_device_info(1_000_000_000, 44_100);
     assert_eq!(device.latency_samples(), 44_100);
   }
 
   #[test]
   fn five_ms_at_48000_hz() {
-    let device = dummy_device_info(5_000_000, 48_000);
+    let device = DeviceInfo::dummy_device_info(5_000_000, 48_000);
     assert_eq!(device.latency_samples(), 240);
   }
 
   #[test]
   fn large_values_no_overflow() {
-    let device = dummy_device_info(1_000_000_000, 44100 * 1024);
+    let device = DeviceInfo::dummy_device_info(1_000_000_000, 44100 * 1024);
     let result = device.latency_samples();
     assert!(result <= usize::MAX);
   }

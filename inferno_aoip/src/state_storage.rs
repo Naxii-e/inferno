@@ -2,7 +2,7 @@ use std::{
   error::Error,
   fs::{create_dir_all, File},
   io::{Read, Write},
-  path::MAIN_SEPARATOR_STR,
+  path::{Path, MAIN_SEPARATOR_STR},
   sync::Arc,
 };
 
@@ -18,10 +18,19 @@ pub struct StateStorage {
 }
 
 impl StateStorage {
-  pub fn new(self_info: &DeviceInfo) -> Self {
-    let dir = AppDirs::new(Some("inferno_aoip"), false).unwrap().state_dir.to_str().unwrap().to_owned()
-      + MAIN_SEPARATOR_STR
-      + &hex::encode(self_info.factory_device_id);
+  /// `base_dir` overrides the platform default state directory (e.g. from the `STATE_DIR` setting).
+  pub fn new(self_info: &DeviceInfo, base_dir: Option<&Path>) -> Self {
+    let device_dir = hex::encode(self_info.factory_device_id);
+    let dir = match base_dir {
+      Some(base) => {
+        base.join(device_dir).to_str().expect("state directory path must be valid UTF-8").to_owned()
+      }
+      None => {
+        AppDirs::new(Some("inferno_aoip"), false).unwrap().state_dir.to_str().unwrap().to_owned()
+          + MAIN_SEPARATOR_STR
+          + &device_dir
+      }
+    };
     create_dir_all(&dir).log_and_forget();
     info!("using state directory: {dir}");
     Self { path_prefix: dir + MAIN_SEPARATOR_STR }
@@ -103,6 +112,22 @@ mod tests {
     // final file should exist
     let final_path = format!("{}atomic{PATH_SUFFIX}", storage.path_prefix);
     assert!(std::path::Path::new(&final_path).exists());
+  }
+
+  #[test]
+  fn explicit_base_dir_is_used() {
+    let dir = std::env::temp_dir().join(format!("inferno-state-test-{}", std::process::id()));
+    let info = DeviceInfo::dummy_device_info(0, 48000);
+    let storage = StateStorage::new(&info, Some(dir.as_path()));
+    assert!(storage.path_prefix.starts_with(dir.to_str().unwrap()));
+    let _ = std::fs::remove_dir_all(dir);
+  }
+
+  #[test]
+  fn unwritable_state_dir_does_not_panic() {
+    let info = DeviceInfo::dummy_device_info(0, 48000);
+    let storage = StateStorage::new(&info, Some(std::path::Path::new("/nonexistent-root/inferno")));
+    assert!(storage.save("x", &1u32).is_err());
   }
 
   #[test]

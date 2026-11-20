@@ -84,7 +84,7 @@ pub struct DeviceServer {
 impl DeviceServer {
   pub async fn start(settings: settings::Settings) -> Self {
     let self_info = Arc::new(settings.self_info);
-    let state_storage = Arc::new(StateStorage::new(&self_info));
+    let state_storage = Arc::new(StateStorage::new(&self_info, settings.state_dir.as_deref()));
     let ref_instant = Instant::now();
 
     let (shutdown_send, shdn_recv1) = broadcast_queue::channel(16);
