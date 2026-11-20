@@ -57,7 +57,7 @@ fn start_clock_server(path: &str, running: Arc<AtomicBool>) -> std::thread::Join
     };
     while running.load(Ordering::Relaxed) {
       server.send(overlay);
-      std::thread::sleep(Duration::from_millis(100));
+      std::thread::sleep(Duration::from_millis(10));
     }
   })
 }
@@ -75,7 +75,7 @@ async fn wait_for_clock(
         return now as usize;
       }
     }
-    tokio::time::sleep(Duration::from_millis(100)).await;
+    tokio::time::sleep(Duration::from_millis(10)).await;
   }
 }
 
