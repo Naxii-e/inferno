@@ -47,5 +47,8 @@ features = ["derive"]
 version = "1.36"
 features = ["net", "time", "sync", "signal"]
 
+[target.'cfg(target_os = "macos")'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 libc = "0.2"
