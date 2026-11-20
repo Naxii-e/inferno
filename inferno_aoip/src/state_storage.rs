@@ -125,9 +125,14 @@ mod tests {
 
   #[test]
   fn unwritable_state_dir_does_not_panic() {
+    // a regular file as a path component makes create_dir_all fail with ENOTDIR, even for root
+    let file = std::env::temp_dir().join(format!("inferno-state-notdir-{}", std::process::id()));
+    std::fs::write(&file, b"").unwrap();
     let info = DeviceInfo::dummy_device_info(0, 48000);
-    let storage = StateStorage::new(&info, Some(std::path::Path::new("/nonexistent-root/inferno")));
-    assert!(storage.save("x", &1u32).is_err());
+    let storage = StateStorage::new(&info, Some(file.join("inferno").as_path()));
+    let result = storage.save("x", &1u32);
+    let _ = std::fs::remove_file(&file);
+    assert!(result.is_err());
   }
 
   #[test]
