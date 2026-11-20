@@ -6,5 +6,5 @@
 	url = https://gitlab.com/lumifaza/alsa-sys-all
 [submodule "usrvclock-rs"]
 	path = usrvclock-rs
-	url = https://gitlab.com/lumifaza/usrvclock-rs
-	branch = next
+	url = https://github.com/Naxii-e/usrvclock-rs
+	branch = next-macos
